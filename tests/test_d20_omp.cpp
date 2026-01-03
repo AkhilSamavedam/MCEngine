@@ -1,16 +1,20 @@
 #include <cstdint>
 #include <iostream>
 #include <mc_engine.hpp>
+#include <rng/splitmix64.h>
+#include <rng/config.h>
 #include <ostream>
 
 using namespace mc;
 
 struct D20Kernel {
-    double operator()(RNGState& rng) const {
-        rng.counter *= 6364136223846793005ULL;
-        const double u = (rng.counter >> 11) * (1.0 / (1ULL << 53));
-        const int roll = static_cast<int>(u * 20.) + 1;
-        return roll;
+    __attribute__((always_inline))
+    double operator()(const RNGState& rng) const {
+        const uint64_t x = rng.index ^ rng.seed * 0x9e3779b97f4a7c15ULL;
+        const uint64_t r = splitmix64(x);
+
+        const double u = u01_from_u64(r);
+        return static_cast<int>(u * 20.0) + 1;
     }
 };
 
@@ -18,6 +22,8 @@ int main() {
     constexpr uint64_t N = 1'000'000'000;
 
     constexpr MCProblem<D20Kernel> problem(N);
+
+    BASE_SEED = 777;
 
     const double mean = run(problem);
 

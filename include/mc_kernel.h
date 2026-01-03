@@ -4,7 +4,7 @@
 
 namespace mc {
     struct RNGState {
-        uint64_t counter;
+        uint64_t index;
         uint64_t seed;
     };
 

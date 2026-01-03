@@ -4,6 +4,7 @@
 #include "backends/cuda_backend.cuh"
 
 namespace mc {
+
     #if defined(MCENGINE_ENABLE_CUDA)
         using  DefaultBackend = CUDABackend;
     #else
