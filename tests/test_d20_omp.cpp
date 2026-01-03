@@ -8,12 +8,10 @@
 using namespace mc;
 
 struct D20Kernel {
+    #pragma omp declare simd
     __attribute__((always_inline))
-    double operator()(const RNGState& rng) const {
-        const uint64_t x = rng.index ^ rng.seed * 0x9e3779b97f4a7c15ULL;
-        const uint64_t r = splitmix64(x);
-
-        const double u = u01_from_u64(r);
+    double operator()(const uint32_t rnd) const {
+        const double u = u01(rnd);
         return static_cast<int>(u * 20.0) + 1;
     }
 };
