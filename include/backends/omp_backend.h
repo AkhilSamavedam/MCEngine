@@ -13,16 +13,15 @@ namespace mc {
     template <typename Problem>
     double run(const Problem& problem, const OMPBackend&) {
         double sum = 0.0;
-        #pragma omp parallel
+        #pragma omp parallel reduction(+:sum)
         {
             double local_sum = 0.0;
             RNGState rng(0, thread_seed());
-            #pragma omp for
+            #pragma omp for schedule(static)
             for (uint64_t i = 0; i < problem.n_paths; i++) {
                 rng.counter = i;
                 local_sum += problem.kernel(rng);
             }
-            #pragma omp atomic
             sum += local_sum;
         }
         return sum / problem.n_paths;
