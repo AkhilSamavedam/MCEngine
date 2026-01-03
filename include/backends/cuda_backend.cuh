@@ -6,7 +6,7 @@
 
 namespace mc {
     template <typename Problem>
-    double run(const CUDABackend&, const Problem& problem) {
+    double run(const Problem& problem, const CUDABackend&) {
         throw std::logic_error("Running backend does not support CUDA");
     }
 }

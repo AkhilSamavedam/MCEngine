@@ -2,15 +2,16 @@
 
 #include <omp.h>
 #include <cstdint>
-#include <mc_engine.hpp>
+#include <mc_kernel.h>
+#include <bits/fs_fwd.h>
 
 namespace mc {
-    uint64_t thread_seed() {
+    inline uint64_t thread_seed() {
         return static_cast<uint64_t>(omp_get_thread_num());
     }
 
     template <typename Problem>
-    double run(const OMPBackend&, const Problem& problem) {
+    double run(const Problem& problem, const OMPBackend&) {
         double sum = 0.0;
         #pragma omp parallel
         {
@@ -24,5 +25,6 @@ namespace mc {
             #pragma omp atomic
             sum += local_sum;
         }
+        return sum / problem.n_paths;
     }
 }
