@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <mc_portability.h>
 
 // Philox4x32-10 (10 rounds as per Random123 / cuRAND)
 
@@ -41,7 +42,7 @@ namespace mc {
     }
 
     __attribute__((always_inline))
-    static Philox4x32 philox10(const uint64_t counter, const uint64_t seed) {
+    MC_HOST_DEVICE static Philox4x32 philox10(const uint64_t counter, const uint64_t seed) {
         Philox4x32 x{};
         x.c[0] = static_cast<uint32_t>(counter);
         x.c[1] = static_cast<uint32_t>(counter >> 32);
@@ -59,7 +60,7 @@ namespace mc {
     }
 
     __attribute__((always_inline))
-    static constexpr double u01(const uint32_t x) {
+    MC_HOST_DEVICE static constexpr double u01(const uint32_t x) {
         return (x >> 8) * (1.0 / (1u << 24));
     }
 } // namespace mc
