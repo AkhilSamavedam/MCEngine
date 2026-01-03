@@ -65,3 +65,10 @@ target_compile_options(MCEngine PRIVATE
         $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra -Wpedantic>
 )
 
+# ----------------------------
+# Testing
+# ----------------------------
+include(CTest)
+enable_testing()
+
+add_subdirectory(tests)
