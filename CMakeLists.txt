@@ -5,6 +5,17 @@ project(MCEngine
         LANGUAGES CXX CUDA
 )
 
+# Find CUDA toolkit
+find_package(CUDAToolkit REQUIRED)
+
+# Set CUDA compiler if found
+if(CUDAToolkit_FOUND)
+    message(STATUS "CUDA toolkit found: ${CUDAToolkit_INCLUDE_DIRS}")
+    set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
+else()
+    message(FATAL_ERROR "CUDA toolkit not found. Please set CUDAToolkit_ROOT to your CUDA installation.")
+endif()
+
 # ----------------------------
 # Language standards
 # ----------------------------
@@ -42,7 +53,6 @@ target_link_libraries(MCEngine PUBLIC OpenMP::OpenMP_CXX)
 # CUDA backend (optional)
 # ----------------------------
 if (MCENGINE_ENABLE_CUDA)
-    enable_language(CUDA)
 
     target_sources(MCEngine
             PRIVATE
@@ -53,9 +63,9 @@ if (MCENGINE_ENABLE_CUDA)
             CUDA_SEPARABLE_COMPILATION ON
     )
 
-    target_compile_definitions(MCEngine PUBLIC MCENGINE_HAS_CUDA=1)
+    target_compile_definitions(MCEngine PUBLIC MCENGINE_ENABLE_CUDA=1)
 else()
-    target_compile_definitions(MCEngine PUBLIC MCENGINE_HAS_CUDA=0)
+    target_compile_definitions(MCEngine PUBLIC MCENGINE_ENABLE_CUDA=0)
 endif()
 
 # ----------------------------

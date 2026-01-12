@@ -1,9 +1,11 @@
 #pragma once
 
 #include <cstdint>
+#include <mc_portability.h>
 
 namespace mc {
 
+    MC_HOST_DEVICE MC_FORCEINLINE
     static uint64_t splitmix64(uint64_t x) {
         x += 0x9e3779b97f4a7c15ULL;
         x = (x ^ x >> 30) * 0xbf58476d1ce4e5b9ULL;
@@ -12,6 +14,7 @@ namespace mc {
     }
 
     // Convert to uniform double in [0, 1)
+    MC_HOST_DEVICE MC_FORCEINLINE
     static double u01_from_u64(const uint64_t x) {
         return (x >> 11) * (1.0 / (1ULL << 53));
     }

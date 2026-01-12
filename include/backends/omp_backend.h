@@ -14,6 +14,7 @@ namespace mc {
 
     template <typename Problem>
     double run(const Problem& problem, const OMPBackend&) {
+
         using Kernel = decltype(problem.kernel);
         constexpr int ARITY = rng_arity<Kernel>();
 
@@ -21,8 +22,8 @@ namespace mc {
 
         #pragma omp parallel reduction(+:sum)
         {
-            const uint64_t tid =
-                static_cast<uint64_t>(omp_get_thread_num());
+            const uint64_t tid = static_cast<uint64_t>(omp_get_thread_num());
+
             const uint64_t stream = splitmix64(BASE_SEED ^ tid);
 
             // -----------------------------

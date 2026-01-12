@@ -11,12 +11,12 @@ namespace mc {
         uint32_t k[2];
     };
 
-    __attribute__((always_inline))
+    MC_HOST_DEVICE MC_FORCEINLINE
     static constexpr uint32_t mulhi(const uint32_t a, const uint32_t b) {
         return (static_cast<uint64_t>(a) * static_cast<uint64_t>(b)) >> 32;
     }
 
-    __attribute__((always_inline))
+    MC_HOST_DEVICE MC_FORCEINLINE
     static Philox4x32 philox_round(const Philox4x32 x) {
         constexpr uint32_t M0 = 0xD2511F53;
         constexpr uint32_t M1 = 0xCD9E8D57;
@@ -41,8 +41,8 @@ namespace mc {
         return out;
     }
 
-    __attribute__((always_inline))
-    MC_HOST_DEVICE static Philox4x32 philox10(const uint64_t counter, const uint64_t seed) {
+    MC_HOST_DEVICE MC_FORCEINLINE
+    static Philox4x32 philox10(const uint64_t counter, const uint64_t seed) {
         Philox4x32 x{};
         x.c[0] = static_cast<uint32_t>(counter);
         x.c[1] = static_cast<uint32_t>(counter >> 32);
@@ -59,8 +59,8 @@ namespace mc {
         return x;
     }
 
-    __attribute__((always_inline))
-    MC_HOST_DEVICE static constexpr double u01(const uint32_t x) {
+    MC_HOST_DEVICE MC_FORCEINLINE
+    static constexpr double u01(const uint32_t x) {
         return (x >> 8) * (1.0 / (1u << 24));
     }
 } // namespace mc
