@@ -106,10 +106,10 @@ namespace mc {
     #define MC_KERNEL_OMP_PRAGMA
 #endif
 
-#define MC_KERNEL(name, ...) \
+#define MC_KERNEL(name, args, ...) \
     struct name { \
         MC_KERNEL_OMP_PRAGMA \
-        MC_KERNEL_OP double operator()(__VA_ARGS__) const
-
-#define MC_KERNEL_END \
+        MC_KERNEL_OP double operator() args const { \
+            __VA_ARGS__ \
+        } \
     };
