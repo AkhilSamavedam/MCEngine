@@ -171,13 +171,17 @@ namespace mc {
         CudaLaunchTable table{};
         if constexpr (Arity == 1) {
             table.launch_arity1 = &launch_kernel_arity1_erased<Kernel>;
-        } else if constexpr (Arity == 2) {
+        } 
+        else if constexpr (Arity == 2) {
             table.launch_arity2 = &launch_kernel_arity2_erased<Kernel>;
-        } else if constexpr (Arity == 3) {
+        } 
+        else if constexpr (Arity == 3) {
             table.launch_arity3 = &launch_kernel_arity3_erased<Kernel>;
-        } else if constexpr (Arity == 4) {
+        } 
+        else if constexpr (Arity == 4) {
             table.launch_arity4 = &launch_kernel_arity4_erased<Kernel>;
-        } else {
+        } 
+        else {
             table.launch_dynamic = &launch_kernel_dynamic_erased<Kernel>;
         }
         return table;
