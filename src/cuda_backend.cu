@@ -7,6 +7,36 @@
 
 namespace mc {
 
+    struct LaunchConfig {
+        int block;
+        int grid;
+    };
+
+    static LaunchConfig select_launch_config(uint64_t n_paths) {
+        int block = 256;
+        int grid = 1024;
+
+        int device = 0;
+        cudaDeviceProp prop{};
+        if (cudaGetDevice(&device) == cudaSuccess &&
+            cudaGetDeviceProperties(&prop, device) == cudaSuccess) {
+            const int sm_count = prop.multiProcessorCount;
+            const int blocks_per_sm = 4;
+            grid = sm_count * blocks_per_sm;
+
+            const uint64_t max_grid = (n_paths + static_cast<uint64_t>(block) - 1) /
+                                      static_cast<uint64_t>(block);
+            if (max_grid > 0 && grid > static_cast<int>(max_grid)) {
+                grid = static_cast<int>(max_grid);
+            }
+            if (grid < 1) {
+                grid = 1;
+            }
+        }
+
+        return {block, grid};
+    }
+
     __global__ void reduce_sum_kernel(const double* input, double* output, size_t n) {
         extern __shared__ double sdata[];
         const unsigned int tid = threadIdx.x;
@@ -46,8 +76,9 @@ namespace mc {
     {
         (void)problem_ptr;
 
-        const int block = 256;
-        const int grid = 1024;
+        const LaunchConfig cfg = select_launch_config(n_paths);
+        const int block = cfg.block;
+        const int grid = cfg.grid;
         const size_t n_threads = static_cast<size_t>(block) * static_cast<size_t>(grid);
 
         double* d_out = nullptr;
