@@ -37,8 +37,14 @@ namespace mc {
         return {block, grid};
     }
 
+    inline __device__ double warp_reduce_sum(double val) {
+        for (int offset = warpSize / 2; offset > 0; offset >>= 1) {
+            val += __shfl_down_sync(0xffffffff, val, offset);
+        }
+        return val;
+    }
+
     __global__ void reduce_sum_kernel(const double* input, double* output, size_t n) {
-        extern __shared__ double sdata[];
         const unsigned int tid = threadIdx.x;
         const unsigned int idx = blockIdx.x * blockDim.x * 2 + tid;
 
@@ -51,18 +57,25 @@ namespace mc {
             }
         }
 
-        sdata[tid] = sum;
+        sum = warp_reduce_sum(sum);
+
+        __shared__ double warp_sums[32];
+        const unsigned int lane = tid & (warpSize - 1);
+        const unsigned int warp_id = tid / warpSize;
+        if (lane == 0) {
+            warp_sums[warp_id] = sum;
+        }
         __syncthreads();
 
-        for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
-            if (tid < s) {
-                sdata[tid] += sdata[tid + s];
+        double block_sum = 0.0;
+        if (warp_id == 0) {
+            block_sum = (lane < (blockDim.x + warpSize - 1) / warpSize)
+                ? warp_sums[lane]
+                : 0.0;
+            block_sum = warp_reduce_sum(block_sum);
+            if (lane == 0) {
+                output[blockIdx.x] = block_sum;
             }
-            __syncthreads();
-        }
-
-        if (tid == 0) {
-            output[blockIdx.x] = sdata[0];
         }
     }
 

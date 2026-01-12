@@ -28,7 +28,17 @@ namespace mc {
         double local_sum = 0.0;
         const uint64_t stream = splitmix64(base_seed ^ tid);
 
-        for (uint64_t i = tid; i < n_paths; i += stride) {
+        const uint64_t n_main = (n_paths / 4) * 4;
+
+        for (uint64_t i = tid * 4; i < n_main; i += stride * 4) {
+            const auto r = philox10(i / 4, stream);
+            local_sum += kernel(r.c[0]);
+            local_sum += kernel(r.c[1]);
+            local_sum += kernel(r.c[2]);
+            local_sum += kernel(r.c[3]);
+        }
+
+        for (uint64_t i = n_main + tid; i < n_paths; i += stride) {
             const auto r = philox10(i, stream);
             local_sum += kernel(r.c[0]);
         }
@@ -44,7 +54,15 @@ namespace mc {
         double local_sum = 0.0;
         const uint64_t stream = splitmix64(base_seed ^ tid);
 
-        for (uint64_t i = tid; i < n_paths; i += stride) {
+        const uint64_t n_main = (n_paths / 2) * 2;
+
+        for (uint64_t i = tid * 2; i < n_main; i += stride * 2) {
+            const auto r = philox10(i / 2, stream);
+            local_sum += kernel(r.c[0], r.c[1]);
+            local_sum += kernel(r.c[2], r.c[3]);
+        }
+
+        for (uint64_t i = n_main + tid; i < n_paths; i += stride) {
             const auto r = philox10(i, stream);
             local_sum += kernel(r.c[0], r.c[1]);
         }

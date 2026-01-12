@@ -61,7 +61,7 @@ void measure_mc_e(const uint64_t N) {
 }
 
 int main() {
-    constexpr uint64_t N = 100'000'000;
+    constexpr uint64_t N = 1'000'000'000;
 
     std::cout << "D20 1 Random" << std::endl;
     measure_mc_e<D20Kernel1>(N);
