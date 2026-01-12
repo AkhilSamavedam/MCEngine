@@ -8,3 +8,5 @@
     #define MC_HOST_DEVICE
     #define MC_FORCEINLINE inline
 #endif
+
+#define MC_KERNEL_OP MC_HOST_DEVICE MC_FORCEINLINE

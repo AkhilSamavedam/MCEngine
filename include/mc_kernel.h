@@ -96,3 +96,20 @@ namespace mc {
     struct OMPBackend {};
     struct CUDABackend {};
 }
+
+#define MC_U32(name) uint32_t name
+#define MC_RNG(name) mc::RNGView& name
+
+#if !defined(__CUDACC__) && defined(_OPENMP)
+    #define MC_KERNEL_OMP_PRAGMA _Pragma("omp declare simd")
+#else
+    #define MC_KERNEL_OMP_PRAGMA
+#endif
+
+#define MC_KERNEL(name, ...) \
+    struct name { \
+        MC_KERNEL_OMP_PRAGMA \
+        MC_KERNEL_OP double operator()(__VA_ARGS__) const
+
+#define MC_KERNEL_END \
+    };

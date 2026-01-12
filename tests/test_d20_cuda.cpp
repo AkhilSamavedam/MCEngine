@@ -5,45 +5,41 @@
 #include <chrono>
 #include <ostream>
 
-struct D20Kernel1 {
-    MC_HOST_DEVICE MC_FORCEINLINE
-    double operator()(uint32_t rnd) const {
-        const double u = mc::u01(rnd);
-        return static_cast<int>(u * 20.0) + 1;
-    }
-};
+MC_KERNEL(D20Kernel1, MC_U32(rnd)) {
+    const double u = mc::u01(rnd);
+    return static_cast<int>(u * 20.0) + 1;
+}
+MC_KERNEL_END
 
-struct D20Kernel2 {
-    MC_HOST_DEVICE MC_FORCEINLINE
-    double operator()(uint32_t rnd, uint32_t) const {
-        const double u = mc::u01(rnd);
-        return static_cast<int>(u * 20.0) + 1;
-    }
-};
+MC_KERNEL(D20Kernel2, MC_U32(rnd), MC_U32(rnd2)) {
+    (void)rnd2;
+    const double u = mc::u01(rnd);
+    return static_cast<int>(u * 20.0) + 1;
+}
+MC_KERNEL_END
 
-struct D20Kernel3 {
-    MC_HOST_DEVICE MC_FORCEINLINE
-    double operator()(uint32_t rnd, uint32_t) const {
-        const double u = mc::u01(rnd);
-        return static_cast<int>(u * 20.0) + 1;
-    }
-};
+MC_KERNEL(D20Kernel3, MC_U32(rnd), MC_U32(rnd2), MC_U32(rnd3)) {
+    (void)rnd2;
+    (void)rnd3;
+    const double u = mc::u01(rnd);
+    return static_cast<int>(u * 20.0) + 1;
+}
+MC_KERNEL_END
 
-struct D20Kernel4 {
-    MC_HOST_DEVICE MC_FORCEINLINE
-    double operator()(uint32_t rnd, uint32_t, uint32_t, uint32_t) const {
-        const double u = mc::u01(rnd);
-        return static_cast<int>(u * 20.0) + 1;
-    }
-};
+MC_KERNEL(D20Kernel4, MC_U32(rnd), MC_U32(rnd2), MC_U32(rnd3), MC_U32(rnd4)) {
+    (void)rnd2;
+    (void)rnd3;
+    (void)rnd4;
+    const double u = mc::u01(rnd);
+    return static_cast<int>(u * 20.0) + 1;
+}
+MC_KERNEL_END
 
-struct D20KernelDyn {
-    MC_HOST_DEVICE MC_FORCEINLINE
-    double operator()(mc::RNGView& rng) const {
-        const double u = rng.next_u01();
-        return static_cast<int>(u * 20.0) + 1;
-    }
-};
+MC_KERNEL(D20KernelDyn, MC_RNG(rng)) {
+    const double u = rng.next_u01();
+    return static_cast<int>(u * 20.0) + 1;
+}
+MC_KERNEL_END
 
 inline double rolls_per_second(uint64_t n_rolls,
                                 std::chrono::steady_clock::time_point start,
