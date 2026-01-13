@@ -1,7 +1,9 @@
 #pragma once
 
 #include "backends/omp_backend.h"
+#include "backends/omp_path_backend.h"
 #include "backends/cuda_backend.h"
+#include "backends/cuda_path_backend.h"
 
 namespace mc {
 
@@ -18,6 +20,15 @@ namespace mc {
         return run(problem, CUDABackend{});
         #else
         return run(problem, OMPBackend{});
+        #endif
+    }
+
+    template <typename Problem>
+    double run_paths(const Problem& problem) {
+        #if defined(MCENGINE_ENABLE_CUDA) && MCENGINE_ENABLE_CUDA && defined(__CUDACC__)
+        return run_paths(problem, CUDABackend{});
+        #else
+        return run_paths(problem, OMPBackend{});
         #endif
     }
 

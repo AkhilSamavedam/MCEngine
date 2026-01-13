@@ -15,6 +15,8 @@ add_mc_test(test_d20_omp test_d20_omp.cpp OFF)
 add_mc_test(test_d20_cuda test_d20_cuda.cpp ON)
 add_mc_test(test_dice_until_6_omp test_dice_until_6_omp.cpp OFF)
 add_mc_test(test_dice_until_6_cuda test_dice_until_6_cuda.cpp ON)
+add_mc_test(test_multistep_omp test_multistep_omp.cpp OFF)
+add_mc_test(test_multistep_cuda test_multistep_cuda.cpp ON)
 
 
 add_test(
@@ -35,4 +37,14 @@ add_test(
 add_test(
         NAME cuda_dice_until_6
         COMMAND test_dice_until_6_cuda
+)
+
+add_test(
+        NAME omp_multistep
+        COMMAND test_multistep_omp
+)
+
+add_test(
+        NAME cuda_multistep
+        COMMAND test_multistep_cuda
 )
