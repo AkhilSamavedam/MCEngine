@@ -4,20 +4,20 @@
 #include <mc_path.h>
 #include <chrono>
 #include <ostream>
+#include <cmath>
 
 using namespace mc;
 
-MC_STATE(RandomWalkState,
+MC_STATE(BrownianState,
     double x;
 )
 
-MC_STEP_KERNEL(RandomWalkStep, (RandomWalkState& st, RNGView& rng, double dt),
-    const double u = rng.next_u01();
-    const double step = (u - 0.5) * dt;
-    st.x += step;
+MC_STEP_KERNEL(BrownianStep, (BrownianState& st, RNGView& rng, double dt),
+    const double z = rng.next_normal();
+    st.x += z * ::sqrt(dt);
 )
 
-MC_PAYOFF_KERNEL(RandomWalkPayoff, (const RandomWalkState& st),
+MC_PAYOFF_KERNEL(BrownianPayoff, (const BrownianState& st),
     return st.x;
 )
 
@@ -34,11 +34,11 @@ int main() {
     constexpr uint32_t steps = 64;
     constexpr double dt = 0.1;
 
-    const RandomWalkState init{0.0};
+    const BrownianState init{0.0};
     const MCPathProblem problem(
         init,
-        RandomWalkStep{},
-        RandomWalkPayoff{},
+        BrownianStep{},
+        BrownianPayoff{},
         N,
         steps,
         dt
@@ -47,12 +47,12 @@ int main() {
     using clock = std::chrono::steady_clock;
 
     auto t0 = clock::now();
-    const double mean = mc::run_paths(problem, mc::OMPBackend{});
+    const double mean = mc::run_paths(problem);
     auto t1 = clock::now();
 
     const double rps = rolls_per_second(N, t0, t1);
 
-    std::cout << "Random walk (OMP)\n";
+    std::cout << "Brownian motion (OMP)\n";
     std::cout << "Rolls/sec = " << rps << "\n";
     std::cout << "Mean      = " << mean << "\n\n";
 

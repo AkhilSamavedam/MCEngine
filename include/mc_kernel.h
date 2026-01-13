@@ -1,7 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include <cmath>
 #include "rng/philox.h"
+
+#if defined(__CUDACC__)
+    #include <curand_kernel.h>
+#endif
 
 namespace mc {
 
@@ -21,6 +26,11 @@ namespace mc {
         // ---- cached Philox block ----
         Philox4x32 block;
         uint32_t cached_block;
+        uint32_t has_spare;
+        double spare;
+#if defined(__CUDACC__)
+        curandStatePhilox4_32_10_t curand_state;
+#endif
 
         // Sentinel value (no <limits>)
         static constexpr uint32_t INVALID_BLOCK = 0xFFFFFFFFu;
@@ -34,11 +44,21 @@ namespace mc {
             , stream(stream_)
             , dim(start_dim)
             , cached_block(INVALID_BLOCK)
-        {}
+            , has_spare(0)
+            , spare(0.0)
+        {
+            #if defined(__CUDA_ARCH__)
+            curand_init(stream, counter, 0, &curand_state);
+            #endif
+        }
 
         // ---- next raw 32-bit random ----
         MC_HOST_DEVICE MC_FORCEINLINE
         uint32_t next_u32() {
+            #if defined(__CUDA_ARCH__)
+            ++dim;
+            return curand(&curand_state);
+            #else
             const uint32_t block_id = dim >> 2;   // dim / 4
             const uint32_t lane     = dim & 3;    // dim % 4
 
@@ -49,12 +69,45 @@ namespace mc {
 
             ++dim;
             return block.c[lane];
+            #endif
         }
 
         // ---- uniform in [0,1) ----
         MC_HOST_DEVICE MC_FORCEINLINE
         double next_u01() {
             return u01(next_u32());
+        }
+
+        MC_HOST_DEVICE MC_FORCEINLINE
+        double next_normal(const double mean = 0.0, const double stdev = 1.0) {
+            #if defined(__CUDA_ARCH__)
+            if (has_spare) {
+                has_spare = 0;
+                return mean + stdev * spare;
+            }
+            const double2 z = curand_normal2_double(&curand_state);
+            spare = z.y;
+            has_spare = 1;
+            return mean + stdev * z.x;
+            #else
+            if (has_spare) {
+                has_spare = 0;
+                return mean + stdev * spare;
+            }
+
+            double u1 = next_u01();
+            if (u1 <= 0.0) {
+                u1 = 1e-12;
+            }
+            const double u2 = next_u01();
+            const double r = ::sqrt(-2.0 * ::log(u1));
+            const double theta = 6.28318530717958647692 * u2;
+            const double z0 = r * ::cos(theta);
+            const double z1 = r * ::sin(theta);
+            spare = z1;
+            has_spare = 1;
+            return mean + stdev * z0;
+            #endif
         }
 
         // ---- bounded integer helpers ----

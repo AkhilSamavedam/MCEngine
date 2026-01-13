@@ -64,6 +64,9 @@ if (MCENGINE_ENABLE_CUDA)
     )
 
     target_compile_definitions(MCEngine PUBLIC MCENGINE_ENABLE_CUDA=1)
+
+    target_link_libraries(MCEngine PUBLIC CUDA::curand)
+    target_compile_definitions(MCEngine PUBLIC MCENGINE_USE_CURAND=1)
 else()
     target_compile_definitions(MCEngine PUBLIC MCENGINE_ENABLE_CUDA=0)
 endif()
