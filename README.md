@@ -136,6 +136,16 @@ The `mc::run()` and `mc::run_paths()` helpers select the backend automatically:
 - CUDA if `MCENGINE_ENABLE_CUDA` is on **and** the calling translation unit is compiled with NVCC.
 - Otherwise OpenMP.
 
+## Type erasure architecture
+
+MCEngine exposes stable, non-templated entry points for both single-step and path-based execution, while keeping templated kernels for performance. The flow is:
+
+1. At compile time, the kernel or problem type is inspected to determine RNG arity and the correct execution path.
+2. A launch table is built for that concrete type. For CUDA this is a `CudaLaunchTable` with device kernel launchers; for OpenMP this is `OmpLaunchTable` and `OmpPathLaunchTable`.
+3. The runtime entry points (`run_cuda_erased`, `run_omp_erased`, `run_omp_paths_erased`) receive a `void*` to the concrete kernel/problem, plus the arity and launch table, and perform a single dispatch to the correct function.
+
+This design keeps dispatch overhead to a single switch per run, avoids per-path runtime checks, and provides a shared-library friendly ABI boundary while still allowing fully inlined kernel code in the templated launchers.
+
 ## Build
 
 Requirements:
