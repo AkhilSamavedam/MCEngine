@@ -2,19 +2,8 @@ cmake_minimum_required(VERSION 4.1)
 
 project(MCEngine
         VERSION 0.1
-        LANGUAGES CXX CUDA
+        LANGUAGES CXX
 )
-
-# Find CUDA toolkit
-find_package(CUDAToolkit REQUIRED)
-
-# Set CUDA compiler if found
-if(CUDAToolkit_FOUND)
-    message(STATUS "CUDA toolkit found: ${CUDAToolkit_INCLUDE_DIRS}")
-    set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
-else()
-    message(FATAL_ERROR "CUDA toolkit not found. Please set CUDAToolkit_ROOT to your CUDA installation.")
-endif()
 
 # ----------------------------
 # Language standards
@@ -30,6 +19,16 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Options
 # ----------------------------
 option(MCENGINE_ENABLE_CUDA "Enable CUDA backend" ON)
+
+if(MCENGINE_ENABLE_CUDA)
+    enable_language(CUDA)
+
+    # Find CUDA toolkit only when needed
+    find_package(CUDAToolkit REQUIRED)
+
+    message(STATUS "CUDA toolkit found: ${CUDAToolkit_INCLUDE_DIRS}")
+    set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
+endif()
 
 # ----------------------------
 # Library target
