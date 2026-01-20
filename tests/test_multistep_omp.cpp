@@ -1,7 +1,6 @@
 #include <cstdint>
 #include <iostream>
 #include <mc_engine.hpp>
-#include <mc_path.h>
 #include <chrono>
 #include <ostream>
 #include <cmath>

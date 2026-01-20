@@ -28,13 +28,6 @@ namespace mc {
         double local_sum = 0.0;
         const uint64_t stream = splitmix64(base_seed ^ tid);
 
-        #if defined(__CUDA_ARCH__)
-        RNGView rng(tid, stream, 0);
-        for (uint64_t i = tid; i < n_paths; i += stride) {
-            rng.counter = i;
-            local_sum += kernel(rng.next_u32());
-        }
-        #else
         const uint64_t n_main = (n_paths / 4) * 4;
 
         for (uint64_t i = tid * 4; i < n_main; i += stride * 4) {
@@ -49,7 +42,6 @@ namespace mc {
             const auto r = philox10(i, stream);
             local_sum += kernel(r.c[0]);
         }
-        #endif
 
         out[tid] = local_sum;
     }
@@ -62,13 +54,6 @@ namespace mc {
         double local_sum = 0.0;
         const uint64_t stream = splitmix64(base_seed ^ tid);
 
-        #if defined(__CUDA_ARCH__)
-        RNGView rng(tid, stream, 0);
-        for (uint64_t i = tid; i < n_paths; i += stride) {
-            rng.counter = i;
-            local_sum += kernel(rng.next_u32(), rng.next_u32());
-        }
-        #else
         const uint64_t n_main = (n_paths / 2) * 2;
 
         for (uint64_t i = tid * 2; i < n_main; i += stride * 2) {
@@ -81,7 +66,6 @@ namespace mc {
             const auto r = philox10(i, stream);
             local_sum += kernel(r.c[0], r.c[1]);
         }
-        #endif
 
         out[tid] = local_sum;
     }
@@ -94,18 +78,10 @@ namespace mc {
         double local_sum = 0.0;
         const uint64_t stream = splitmix64(base_seed ^ tid);
 
-        #if defined(__CUDA_ARCH__)
-        RNGView rng(tid, stream, 0);
-        for (uint64_t i = tid; i < n_paths; i += stride) {
-            rng.counter = i;
-            local_sum += kernel(rng.next_u32(), rng.next_u32(), rng.next_u32());
-        }
-        #else
         for (uint64_t i = tid; i < n_paths; i += stride) {
             const auto r = philox10(i, stream);
             local_sum += kernel(r.c[0], r.c[1], r.c[2]);
         }
-        #endif
 
         out[tid] = local_sum;
     }
@@ -118,23 +94,10 @@ namespace mc {
         double local_sum = 0.0;
         const uint64_t stream = splitmix64(base_seed ^ tid);
 
-        #if defined(__CUDA_ARCH__)
-        RNGView rng(tid, stream, 0);
-        for (uint64_t i = tid; i < n_paths; i += stride) {
-            rng.counter = i;
-            local_sum += kernel(
-                rng.next_u32(),
-                rng.next_u32(),
-                rng.next_u32(),
-                rng.next_u32()
-            );
-        }
-        #else
         for (uint64_t i = tid; i < n_paths; i += stride) {
             const auto r = philox10(i, stream);
             local_sum += kernel(r.c[0], r.c[1], r.c[2], r.c[3]);
         }
-        #endif
 
         out[tid] = local_sum;
     }

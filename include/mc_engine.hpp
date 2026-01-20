@@ -1,5 +1,8 @@
 #pragma once
 
+#include "mc_kernel.h"
+#include "mc_path.h"
+
 #include "backends/omp_backend.h"
 #include "backends/omp_path_backend.h"
 #include "backends/cuda_backend.h"

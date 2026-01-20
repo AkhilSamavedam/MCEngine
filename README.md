@@ -71,7 +71,6 @@ A path-based problem evolves a state over multiple steps and computes a payoff a
 
 ```cpp
 #include <mc_engine.hpp>
-#include <mc_path.h>
 
 using namespace mc;
 
@@ -194,7 +193,7 @@ Example programs:
 - `mc::run(problem, mc::CUDABackend{})`: force CUDA (NVCC only).
 - `mc::run_paths(problem)`: run path-based problem with auto backend.
 
-Kernel macros (defined in `include/mc_kernel.h` and `include/mc_path.h`):
+Kernel macros (defined in `mc_kernel.h` and `mc_path.h`, and included by `mc_engine.hpp`):
 
 - `MC_KERNEL(Name, (args...), body...)`
 - `MC_STATE(Name, body...)`
