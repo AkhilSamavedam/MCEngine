@@ -61,11 +61,20 @@ if (MCENGINE_ENABLE_CUDA)
     set_target_properties(MCEngine PROPERTIES
             CUDA_SEPARABLE_COMPILATION ON
     )
+    set_target_properties(MCEngine PROPERTIES
+            CUDA_RESOLVE_DEVICE_SYMBOLS ON
+    )
 
     target_compile_definitions(MCEngine PUBLIC MCENGINE_ENABLE_CUDA=1)
 
     target_link_libraries(MCEngine PUBLIC CUDA::curand)
     target_compile_definitions(MCEngine PUBLIC MCENGINE_USE_CURAND=1)
+
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda --expt-relaxed-constexpr")
+
+    target_compile_options(MCEngine PUBLIC
+            $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda --expt-relaxed-constexpr>
+    )
 else()
     target_compile_definitions(MCEngine PUBLIC MCENGINE_ENABLE_CUDA=0)
 endif()

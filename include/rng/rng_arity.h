@@ -37,13 +37,46 @@ struct function_traits<R (C::*)(Args...)> {
     using arg = std::tuple_element_t<I, std::tuple<Args...>>;
 };
 
+// free function pointer
+template <typename R, typename... Args>
+struct function_traits<R (*)(Args...)> {
+    using return_type = R;
+    static constexpr std::size_t arity = sizeof...(Args);
+
+    template <std::size_t I>
+    using arg = std::tuple_element_t<I, std::tuple<Args...>>;
+};
+
+// free function type
+template <typename R, typename... Args>
+struct function_traits<R(Args...)> {
+    using return_type = R;
+    static constexpr std::size_t arity = sizeof...(Args);
+
+    template <std::size_t I>
+    using arg = std::tuple_element_t<I, std::tuple<Args...>>;
+};
+
 /* ============================================================
  *  RNGView detection
  * ============================================================ */
 
+template <typename Kernel, typename Enable = void>
+struct kernel_traits {
+    using type = function_traits<Kernel>;
+};
+
+template <typename Kernel>
+struct kernel_traits<Kernel, std::enable_if_t<std::is_class_v<Kernel>>> {
+    using type = function_traits<decltype(&Kernel::operator())>;
+};
+
+template <typename Kernel>
+using kernel_traits_t = typename kernel_traits<Kernel>::type;
+
 template <typename Kernel>
 constexpr bool uses_rngview() {
-    using traits = function_traits<decltype(&Kernel::operator())>;
+    using traits = kernel_traits_t<Kernel>;
 
     if constexpr (traits::arity == 1) {
         using A0 = typename traits::template arg<0>;
@@ -67,7 +100,14 @@ constexpr bool uses_rngview() {
 
 template <typename Kernel>
 constexpr int rng_arity() {
-    using traits = function_traits<decltype(&Kernel::operator())>;
+    #if defined(__CUDACC__)
+    static_assert(
+        !std::is_pointer_v<Kernel>,
+        "CUDA kernels must be lambdas/functors, not function pointers."
+    );
+    #endif
+
+    using traits = kernel_traits_t<Kernel>;
 
     static_assert(
         traits::arity > 0,

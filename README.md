@@ -6,7 +6,7 @@ High-performance Monte Carlo engine with deterministic RNG, OpenMP CPU backend, 
 
 MCEngine is a C++20 library for running Monte Carlo simulations across many independent paths. It provides:
 
-- A compact kernel definition API (`MC_KERNEL`) for single-step Monte Carlo estimators.
+- An annotation-based kernel definition style using `MC` for CUDA compatibility.
 - A path-based API (`MCPathProblem`) for multi-step simulations.
 - Deterministic, dimension-aware RNG (`RNGView`) based on Philox4x32-10.
 - Backend selection between OpenMP (CPU) and CUDA (GPU).
@@ -27,13 +27,13 @@ Example (fixed-arity, 1 random per path):
 
 using namespace mc;
 
-MC_KERNEL(D20Kernel, (MC_U32(rnd)),
+auto k = [](uint32_t rnd) -> double {
     const double u = u01(rnd);
     return static_cast<int>(u * 20.0) + 1;
-)
+};
 
 int main() {
-    const MCProblem<D20Kernel> problem(100'000'000);
+    const MCProblem problem(k, 100'000'000);
     const double mean = mc::run(problem);
     (void)mean;
 }
@@ -46,7 +46,7 @@ Example (dynamic RNG):
 
 using namespace mc;
 
-MC_KERNEL(DiceUntil6Kernel, (MC_RNG(rng)),
+auto k = [](mc::RNGView& rng) -> double {
     int sum = 0;
     while (true) {
         const int roll = rng.next_int(1, 6);
@@ -56,14 +56,16 @@ MC_KERNEL(DiceUntil6Kernel, (MC_RNG(rng)),
         }
     }
     return static_cast<double>(sum);
-)
+};
 
 int main() {
-    const MCProblem<DiceUntil6Kernel> problem(10'000'000);
+    const MCProblem problem(k, 10'000'000);
     const double mean = mc::run(problem);
     (void)mean;
 }
 ```
+
+Note: For CUDA builds, lambdas must be device-callable. Use `MC` on the lambda (or `__host__ __device__`) and compile with NVCC extended lambdas. Function pointers are not supported as CUDA kernels; use lambdas or functors.
 
 ### 2) Path-based problems: `MCPathProblem`
 
@@ -74,31 +76,31 @@ A path-based problem evolves a state over multiple steps and computes a payoff a
 
 using namespace mc;
 
-MC_STATE(BrownianState,
+struct BrownianState {
     double x;
-)
+};
 
-MC_STEP_KERNEL(BrownianStep, (BrownianState& st, RNGView& rng, double dt),
+auto step = [](BrownianState& st, RNGView& rng, double dt) {
     const double z = rng.next_normal();
     st.x += z * ::sqrt(dt);
-)
+};
 
-MC_PAYOFF_KERNEL(BrownianPayoff, (const BrownianState& st),
+auto payoff = [](const BrownianState& st) -> double {
     return st.x;
-)
+};
 
 int main() {
     const BrownianState init{0.0};
     const MCPathProblem problem(
         init,
-        BrownianStep{},
-        BrownianPayoff{},
+        step,
+        payoff,
         50'000'000,
         64,
         0.1
     );
 
-    const double mean = mc::run_paths(problem);
+    const double mean = mc::run(problem);
     (void)mean;
 }
 ```
@@ -191,9 +193,10 @@ Example programs:
 - `mc::run(problem)`: run with auto-selected backend.
 - `mc::run(problem, mc::OMPBackend{})`: force OpenMP.
 - `mc::run(problem, mc::CUDABackend{})`: force CUDA (NVCC only).
-- `mc::run_paths(problem)`: run path-based problem with auto backend.
+- `mc::run_paths(problem)`: run path-based problem with auto backend (explicit).
+- `mc::run(problem)`: runs `MCProblem` or `MCPathProblem` with auto backend.
 
-Kernel macros (defined in `mc_kernel.h` and `mc_path.h`, and included by `mc_engine.hpp`):
+Kernel macros (optional, defined in `mc_kernel.h` and `mc_path.h`, and included by `mc_engine.hpp`):
 
 - `MC_KERNEL(Name, (args...), body...)`
 - `MC_STATE(Name, body...)`

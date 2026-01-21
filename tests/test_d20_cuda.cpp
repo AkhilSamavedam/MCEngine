@@ -5,37 +5,6 @@
 #include <chrono>
 #include <ostream>
 
-MC_KERNEL(D20Kernel1, (MC_U32(rnd)),
-    const double u = mc::u01(rnd);
-    return static_cast<int>(u * 20.0) + 1;
-)
-
-MC_KERNEL(D20Kernel2, (MC_U32(rnd), MC_U32(rnd2)),
-    (void)rnd2;
-    const double u = mc::u01(rnd);
-    return static_cast<int>(u * 20.0) + 1;
-)
-
-MC_KERNEL(D20Kernel3, (MC_U32(rnd), MC_U32(rnd2), MC_U32(rnd3)),
-    (void)rnd2;
-    (void)rnd3;
-    const double u = mc::u01(rnd);
-    return static_cast<int>(u * 20.0) + 1;
-)
-
-MC_KERNEL(D20Kernel4, (MC_U32(rnd), MC_U32(rnd2), MC_U32(rnd3), MC_U32(rnd4)),
-    (void)rnd2;
-    (void)rnd3;
-    (void)rnd4;
-    const double u = mc::u01(rnd);
-    return static_cast<int>(u * 20.0) + 1;
-)
-
-MC_KERNEL(D20KernelDyn, (MC_RNG(rng)),
-    const double u = rng.next_u01();
-    return static_cast<int>(u * 20.0) + 1;
-)
-
 inline double rolls_per_second(uint64_t n_rolls,
                                 std::chrono::steady_clock::time_point start,
                                 std::chrono::steady_clock::time_point end)
@@ -44,9 +13,9 @@ inline double rolls_per_second(uint64_t n_rolls,
     return static_cast<double>(n_rolls) / elapsed.count();
 }
 
-template <typename KernelType>
-void measure_mc_e(const uint64_t N) {
-    const mc::MCProblem<KernelType> problem(N);
+template <typename Kernel>
+void measure_mc_e(const Kernel& kernel, const uint64_t N) {
+    const mc::MCProblem problem(kernel, N);
 
     using clock = std::chrono::steady_clock;
 
@@ -60,19 +29,48 @@ void measure_mc_e(const uint64_t N) {
     std::cout << "Mean      = " << mean << "\n\n";
 }
 
+struct D20Kernel1 {
+    MC double operator()(uint32_t rnd) const {
+        const double u = mc::u01(rnd);
+        return static_cast<int>(u * 20.0) + 1;
+    }
+};
+
 int main() {
     constexpr uint64_t N = 1'000'000'000;
 
+    const D20Kernel1 D20Kernel1;
+
+    const auto D20Kernel2 = [] MC (uint32_t rnd, uint32_t rnd2) -> double {
+        const double u = mc::u01(rnd);
+        return static_cast<int>(u * 20.0) + 1;
+    };
+
+    const auto D20Kernel3 = [] MC (uint32_t rnd, uint32_t rnd2, uint32_t rnd3) -> double {
+        const double u = mc::u01(rnd);
+        return static_cast<int>(u * 20.0) + 1;
+    };
+
+    const auto D20Kernel4 = [] MC (uint32_t rnd, uint32_t rnd2, uint32_t rnd3, uint32_t rnd4) -> double {
+        const double u = mc::u01(rnd);
+        return static_cast<int>(u * 20.0) + 1;
+    };
+
+    const auto D20KernelDyn = [] MC (mc::RNGView& rng) -> double {
+        const double u = rng.next_u01();
+        return static_cast<int>(u * 20.0) + 1;
+    };
+
     std::cout << "D20 1 Random" << std::endl;
-    measure_mc_e<D20Kernel1>(N);
+    measure_mc_e(D20Kernel1, N);
     std::cout << "D20 2 Random" << std::endl;
-    measure_mc_e<D20Kernel2>(N);
+    measure_mc_e(D20Kernel2, N);
     std::cout << "D20 3 Random" << std::endl;
-    measure_mc_e<D20Kernel3>(N);
+    measure_mc_e(D20Kernel3, N);
     std::cout << "D20 4 Random" << std::endl;
-    measure_mc_e<D20Kernel4>(N);
+    measure_mc_e(D20Kernel4, N);
     std::cout << "D20 Dynamic Random" << std::endl;
-    measure_mc_e<D20KernelDyn>(N);
+    measure_mc_e(D20KernelDyn, N);
 
     return 0;
 }

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cmath>
+#include <utility>
 #include "rng/philox.h"
 
 #if defined(__CUDACC__)
@@ -166,3 +167,5 @@ namespace mc {
             __VA_ARGS__ \
         } \
     };
+
+// MC is the single annotation used for kernel callables and functions.

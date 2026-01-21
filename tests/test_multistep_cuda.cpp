@@ -1,23 +1,16 @@
 #include <cstdint>
 #include <iostream>
 #include <mc_engine.hpp>
+#include <mc_portability.h>
 #include <chrono>
 #include <ostream>
 #include <cmath>
 
 using namespace mc;
 
-MC_STATE(BrownianState,
+struct BrownianState {
     double x;
-)
-
-MC_STEP_KERNEL(BrownianStep, (BrownianState& st, RNGView& rng, double dt),
-    st.x += rng.next_normal(0, ::sqrt(dt));
-)
-
-MC_PAYOFF_KERNEL(BrownianPayoff, (const BrownianState& st),
-    return st.x;
-)
+};
 
 inline double rolls_per_second(uint64_t n_rolls,
                                 std::chrono::steady_clock::time_point start,
@@ -32,11 +25,19 @@ int main() {
     constexpr uint32_t steps = 64;
     constexpr double dt = 0.1;
 
+    const auto BrownianStep = [] MC (BrownianState& st, RNGView& rng, double dt) {
+        st.x += rng.next_normal(0, ::sqrt(dt));
+    };
+
+    const auto BrownianPayoff = [] MC (const BrownianState& st) -> double {
+        return st.x;
+    };
+
     const BrownianState init{0.0};
     const MCPathProblem problem(
         init,
-        BrownianStep{},
-        BrownianPayoff{},
+        BrownianStep,
+        BrownianPayoff,
         N,
         steps,
         dt

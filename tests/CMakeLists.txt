@@ -8,6 +8,13 @@ function(add_mc_test target src use_cuda)
         if (use_cuda)
                 set_source_files_properties(${src} PROPERTIES LANGUAGE CUDA)
                 target_compile_definitions(${target} PRIVATE MCENGINE_ENABLE_CUDA=1)
+                target_compile_options(${target} PRIVATE
+                        $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda --expt-relaxed-constexpr>
+                )
+                set_target_properties(${target} PROPERTIES
+                        CUDA_SEPARABLE_COMPILATION ON
+                        CUDA_RESOLVE_DEVICE_SYMBOLS ON
+                )
         endif()
 endfunction()
 
@@ -17,7 +24,7 @@ add_mc_test(test_dice_until_6_omp test_dice_until_6_omp.cpp OFF)
 add_mc_test(test_dice_until_6_cuda test_dice_until_6_cuda.cpp ON)
 add_mc_test(test_multistep_omp test_multistep_omp.cpp OFF)
 add_mc_test(test_multistep_cuda test_multistep_cuda.cpp ON)
-
+add_mc_test(test_simple_ms_cuda test_simple_ms_cuda.cpp ON)
 
 add_test(
         NAME omp_d20_mean
@@ -47,4 +54,9 @@ add_test(
 add_test(
         NAME cuda_multistep
         COMMAND test_multistep_cuda
+)
+
+add_test(
+        NAME cuda_simple_ms
+        COMMAND test_simple_ms_cuda
 )

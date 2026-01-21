@@ -7,18 +7,18 @@
 
 using namespace mc;
 
-MC_STATE(BrownianState,
+struct BrownianState {
     double x;
-)
+};
 
-MC_STEP_KERNEL(BrownianStep, (BrownianState& st, RNGView& rng, double dt),
+const auto BrownianStep = [](BrownianState& st, RNGView& rng, double dt) {
     const double z = rng.next_normal();
     st.x += z * ::sqrt(dt);
-)
+};
 
-MC_PAYOFF_KERNEL(BrownianPayoff, (const BrownianState& st),
+const auto BrownianPayoff = [](const BrownianState& st) -> double {
     return st.x;
-)
+};
 
 inline double rolls_per_second(uint64_t n_rolls,
                                 std::chrono::steady_clock::time_point start,
@@ -36,8 +36,8 @@ int main() {
     const BrownianState init{0.0};
     const MCPathProblem problem(
         init,
-        BrownianStep{},
-        BrownianPayoff{},
+        BrownianStep,
+        BrownianPayoff,
         N,
         steps,
         dt

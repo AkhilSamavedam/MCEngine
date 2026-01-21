@@ -1,22 +1,11 @@
 #include <cstdint>
 #include <iostream>
 #include <mc_engine.hpp>
+#include <mc_portability.h>
 #include <chrono>
 #include <ostream>
 
 using namespace mc;
-
-MC_KERNEL(DiceUntil6Kernel, (MC_RNG(rng)),
-    int sum = 0;
-    while (true) {
-        const int roll = rng.next_int(1, 6);
-        sum += roll;
-        if (roll == 6) {
-            break;
-        }
-    }
-    return static_cast<double>(sum);
-)
 
 inline double rolls_per_second(uint64_t n_rolls,
                                 std::chrono::steady_clock::time_point start,
@@ -28,7 +17,19 @@ inline double rolls_per_second(uint64_t n_rolls,
 
 int main() {
     constexpr uint64_t N = 50'000'000;
-    const MCProblem<DiceUntil6Kernel> problem(N);
+    const auto DiceUntil6Kernel = [] MC (mc::RNGView& rng) -> double {
+        int sum = 0;
+        while (true) {
+            const int roll = rng.next_int(1, 6);
+            sum += roll;
+            if (roll == 6) {
+                break;
+            }
+        }
+        return static_cast<double>(sum);
+    };
+
+    const MCProblem problem(DiceUntil6Kernel, N);
 
     using clock = std::chrono::steady_clock;
 
