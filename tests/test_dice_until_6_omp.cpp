@@ -28,7 +28,7 @@ inline double rolls_per_second(uint64_t n_rolls,
 
 int main() {
     constexpr uint64_t N = 100'000'000;
-    const MCProblem problem(DiceUntil6Kernel, N);
+    const Problem problem(DiceUntil6Kernel, N);
 
     using clock = std::chrono::steady_clock;
 

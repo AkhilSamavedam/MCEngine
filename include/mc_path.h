@@ -6,7 +6,7 @@
 namespace mc {
 
     template <typename State, typename StepKernel, typename PayoffKernel>
-    struct MCPathProblem {
+    struct PathProblem {
         State initial_state;
         StepKernel step_kernel;
         PayoffKernel payoff_kernel;
@@ -14,7 +14,7 @@ namespace mc {
         uint32_t n_steps;
         double dt;
 
-        MCPathProblem(State init,
+        PathProblem(State init,
                       StepKernel step,
                       PayoffKernel payoff,
                       uint64_t n_paths,
@@ -28,12 +28,12 @@ namespace mc {
             , dt(dt)
         {}
 
-        MCPathProblem(const MCPathProblem&) = delete;
+        PathProblem(const PathProblem&) = delete;
     };
 
     template <typename State, typename StepKernel, typename PayoffKernel>
-    MCPathProblem(State, StepKernel, PayoffKernel, uint64_t, uint32_t, double)
-        -> MCPathProblem<State, StepKernel, PayoffKernel>;
+    PathProblem(State, StepKernel, PayoffKernel, uint64_t, uint32_t, double)
+        -> PathProblem<State, StepKernel, PayoffKernel>;
 
 } // namespace mc
 

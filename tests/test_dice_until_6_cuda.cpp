@@ -29,7 +29,7 @@ int main() {
         return static_cast<double>(sum);
     };
 
-    const MCProblem problem(DiceUntil6Kernel, N);
+    const Problem problem(DiceUntil6Kernel, N);
 
     using clock = std::chrono::steady_clock;
 

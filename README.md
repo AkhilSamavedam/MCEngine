@@ -7,13 +7,13 @@ High-performance Monte Carlo engine with deterministic RNG, OpenMP CPU backend, 
 MCEngine is a C++20 library for running Monte Carlo simulations across many independent paths. It provides:
 
 - An annotation-based kernel definition style using `MC` for CUDA compatibility.
-- A path-based API (`MCPathProblem`) for multi-step simulations.
+- A path-based API (`PathProblem`) for multi-step simulations.
 - Deterministic, dimension-aware RNG (`RNGView`) based on Philox4x32-10.
 - Backend selection between OpenMP (CPU) and CUDA (GPU).
 
 ## Core concepts
 
-### 1) Single-step problems: `MCProblem`
+### 1) Single-step problems: `Problem`
 
 A single-step problem is a kernel that maps random inputs to a `double` payoff. MCEngine infers the RNG mode from the kernel signature:
 
@@ -33,7 +33,7 @@ auto k = [](uint32_t rnd) -> double {
 };
 
 int main() {
-    const MCProblem problem(k, 100'000'000);
+    const Problem problem(k, 100'000'000);
     const double mean = mc::run(problem);
     (void)mean;
 }
@@ -59,7 +59,7 @@ auto k = [](mc::RNGView& rng) -> double {
 };
 
 int main() {
-    const MCProblem problem(k, 10'000'000);
+    const Problem problem(k, 10'000'000);
     const double mean = mc::run(problem);
     (void)mean;
 }
@@ -67,7 +67,7 @@ int main() {
 
 Note: For CUDA builds, lambdas must be device-callable. Use `MC` on the lambda (or `__host__ __device__`) and compile with NVCC extended lambdas. Function pointers are not supported as CUDA kernels; use lambdas or functors.
 
-### 2) Path-based problems: `MCPathProblem`
+### 2) Path-based problems: `PathProblem`
 
 A path-based problem evolves a state over multiple steps and computes a payoff at the end:
 
@@ -91,7 +91,7 @@ auto payoff = [](const BrownianState& st) -> double {
 
 int main() {
     const BrownianState init{0.0};
-    const MCPathProblem problem(
+    const PathProblem problem(
         init,
         step,
         payoff,
@@ -188,13 +188,13 @@ Example programs:
 
 ## API reference (quick)
 
-- `mc::MCProblem<Kernel>`: single-step Monte Carlo problem.
-- `mc::MCPathProblem<State, StepKernel, PayoffKernel>`: multi-step path simulation.
+- `mc::Problem<Kernel>`: single-step Monte Carlo problem.
+- `mc::PathProblem<State, StepKernel, PayoffKernel>`: multi-step path simulation.
 - `mc::run(problem)`: run with auto-selected backend.
 - `mc::run(problem, mc::OMPBackend{})`: force OpenMP.
 - `mc::run(problem, mc::CUDABackend{})`: force CUDA (NVCC only).
 - `mc::run_paths(problem)`: run path-based problem with auto backend (explicit).
-- `mc::run(problem)`: runs `MCProblem` or `MCPathProblem` with auto backend.
+- `mc::run(problem)`: runs `Problem` or `PathProblem` with auto backend.
 
 Kernel macros (optional, defined in `mc_kernel.h` and `mc_path.h`, and included by `mc_engine.hpp`):
 

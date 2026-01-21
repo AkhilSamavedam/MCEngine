@@ -19,7 +19,7 @@ int main() {
         return x; // payoff = terminal state
     };
 
-    const MCProblem problem(brownian_kernel, N);
+    const Problem problem(brownian_kernel, N);
 
     using clock = std::chrono::steady_clock;
     const auto t0 = clock::now();

@@ -34,7 +34,7 @@ int main() {
     constexpr double dt = 0.1;
 
     const BrownianState init{0.0};
-    const MCPathProblem problem(
+    const PathProblem problem(
         init,
         BrownianStep,
         BrownianPayoff,

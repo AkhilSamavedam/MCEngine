@@ -132,20 +132,20 @@ namespace mc {
     };
     */
     template <typename Kernel>
-    struct MCProblem {
+    struct Problem {
         Kernel kernel;
         uint64_t n_paths;
 
-        constexpr explicit MCProblem(const uint64_t n_paths) : kernel(), n_paths(n_paths) {}
+        constexpr explicit Problem(const uint64_t n_paths) : kernel(), n_paths(n_paths) {}
 
-        constexpr MCProblem(Kernel k, const uint64_t n_paths) : kernel(k), n_paths(n_paths) {}
+        constexpr Problem(Kernel k, const uint64_t n_paths) : kernel(k), n_paths(n_paths) {}
 
-        constexpr MCProblem(const MCProblem&) = delete;
+        constexpr Problem(const Problem&) = delete;
 
     };
 
     template <typename Kernel>
-    MCProblem(Kernel, uint64_t) -> MCProblem<Kernel>;
+    Problem(Kernel, uint64_t) -> Problem<Kernel>;
 
     struct OMPBackend {};
     struct CUDABackend {};

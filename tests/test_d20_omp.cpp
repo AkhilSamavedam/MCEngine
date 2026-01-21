@@ -47,7 +47,7 @@ inline double rolls_per_second(uint64_t n_rolls,
 
 template <typename Kernel>
 void measure_mc_e(const Kernel& kernel, const uint64_t N) {
-    const MCProblem problem(kernel, N);
+    const Problem problem(kernel, N);
 
     using clock = std::chrono::steady_clock;
 

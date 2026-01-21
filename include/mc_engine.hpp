@@ -11,7 +11,7 @@
 namespace mc {
 
     template <typename State, typename StepKernel, typename PayoffKernel>
-    double run(const MCPathProblem<State, StepKernel, PayoffKernel>& problem, OMPBackend) {
+    double run(const PathProblem<State, StepKernel, PayoffKernel>& problem, OMPBackend) {
         return run_paths(problem, OMPBackend{});
     }
 
@@ -22,7 +22,7 @@ namespace mc {
     }
 
     template <typename State, typename StepKernel, typename PayoffKernel>
-    double run(const MCPathProblem<State, StepKernel, PayoffKernel>& problem, CUDABackend) {
+    double run(const PathProblem<State, StepKernel, PayoffKernel>& problem, CUDABackend) {
         return run_paths(problem, CUDABackend{});
     }
     #endif
@@ -37,7 +37,7 @@ namespace mc {
     }
 
     template <typename State, typename StepKernel, typename PayoffKernel>
-    double run(const MCPathProblem<State, StepKernel, PayoffKernel>& problem) {
+    double run(const PathProblem<State, StepKernel, PayoffKernel>& problem) {
         return run_paths(problem);
     }
 
